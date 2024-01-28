@@ -1,0 +1,391 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{url}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Audio Classification Model Comparison\\
+}
+\author{\IEEEauthorblockN{Alessandro Di Stefano}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{University of Milan}\\
+Milan, Italy \\
+alessandro.distefano2@studenti.unimi.it}
+}
+\maketitle
+
+\begin{abstract}
+Audio classification is a well-known problem for which many algorithms have been proposed in the past. However each algorithm usually has different pros and cons when it comes to data preparation, feature extraction and complexity versus accuracy. In this article I want to explore and compare three different models such as KNN, Random Forest and CNN on both binary and multi-class classification tasks. Also, I show different EDA and dimensionality reduction tools to use when accuracy is not the only metric that needs to be optmized as is often the case in a business context where stakeholders want to understand the main features used for the modeling phase.
+\end{abstract}
+
+\section{Introduction}
+With the rapid success of ML and DL approaches in the last years, many audio Classification methods have been proposed as audio data analysis is still one of the most important research topics with a large number of applications in real life including brainwave entrainment beats\cite{b1}, Urban sound\cite{b2}, genre classification\cite{b3} and anomalous audio detection\cite{b4}. ML and DL methods are usually more flexible and tend to perform better than traditional methods\cite{b5}. However, their performance and generalization capabilities can be strongly affected by the feature selection method which represents a mandatory step before the modeling phase\cite{b6}. On DL side the problem is more complex: data-hungry models like CNNs cannot often be trained from scratch and as such other solutions must be sought to avoid a lack in the generalization process due to the over-fitting problem. The aim of this paper is to apply different learning models on two different tasks:  fake-audio binary classification and genre multi-classification. Concerning ML models, different EDA and dimensionality reduction methods are presented and discussed in depth. This choice is motivated by the fact that stakeholders in any business environment often want to extract some value from the data. Thus EDA process plays an important role in any ML/DL pipeline as from one side it improves the model comprehension while from the other side it can generate value and provide insights. 
+A CNN is also selected as main DL method as it has proved to be very effective when it comes to classify audio\cite{b7}. The rest of this paper is organized as follows. Section 2 describes the proposed approach used to perform the sound classification. Section 3 introduces the experimental setup, while Section 4 shows the final results. Finally, section 5 outlines some possible improvements.
+\section{The proposed approach}
+The approach includes the following steps:
+\begin{itemize}
+    \item Feature extraction
+    \item Feature analysis and exploration (EDA)
+    \item Insight extraction (for business purpose)
+    \item Modeling phase
+\end{itemize}
+\begin{figure*}
+\centering
+\includegraphics[scale=0.2]{ML_block_3.png}
+\caption{Block diagram for ML approaches.}
+\label{fig:ml_approach}
+\end{figure*}
+\begin{figure*}
+\centering
+\includegraphics[scale=0.2]{DL_block_3.png}
+\caption{Block diagram for DL approach.}
+\label{fig:dl_approach}
+\end{figure*}
+For some models feature extraction and reduction phases can be managed by the model itself. The impact of each feature strategy has been measured using clustering algorithm (see \ref{feature_eval}). 
+Finally for each model an evaluation score has been reported on a validation dataset. 
+\subsection{Feature extraction}
+For each frame the following features have been extracted: 
+\begin{itemize}
+    \item First 20 Mel-Frequency Cepstral Coefficients (MFCCs) which are a representation of the signal where the frequency bands are distributed according to the mel-scale
+    \item Spectral Centroid which is computed as the weighted mean of the frequencies present in the sound
+    \item Zero crossing rate that is the rate at which the signal changes from positive to negative or back
+    \item Spectral bandwidth which represents the difference between the upper and lower frequencies
+    \item Spectral flatness value to differentiate between noise-like and tone-like sounds
+    \item RMSE which measures the average energy of the audio
+    \item Spectral Rolloff (cutoff at 85\%)\\
+For each of the above features mean, std and max values are computed over all frames.
+\end{itemize}
+\subsection{EDA: ECDF curve}
+ECDF curves can be used to display the data points in a sample from lowest to highest against their percentiles. A curve is showed for a specific class and color. Thus different classes can be compared with respect to the ECDF of a specific feature. As such very discriminating features can be discovered using this kind of chart. So one can select the first k features with a greater discriminative power just looking at the distance among different distribution curves. Clearly this is a quality approach, yet it can be very effective. Also a chi2square \cite{b8} test can be run to measure the strength of the difference between two distributions. 
+\subsection{EDA: Spearman Correlation}
+The Spearman's rank-order correlation is the non-parametric version of the Pearson product-moment correlation which is appropriate when the relationship between variables is not linear. A value of +1 means a perfect association of rank, a value of 0 means no association of ranks whereas a value of -1 means a perfect negative association between ranks 
+\subsection{Clustering}
+For this study K-means is used as clustering algorithm. Even if it considers only convex clusters, it's often used thanks to its simplicity. Clustering is a power data mining tool to discover patterns and groups of homogeneous data. Once all clusters are built one can describe and analyze each of them to make possible hypotheses about the data in a cluster. In addition, these kind of information can be used for stakeholder reporting and engagement. K-means groups are compared against the real labels to measure the quality of the features used. 
+
+\subsection{Dimensionality Reduction}
+A higher number of features makes the model more complex and weaker as the amount of data needed to generalize the model accurately increases exponentially (a problem known as curse of dimensionality)\cite{b9}. Feature selection and Feature extraction are two different techniques to reduce the number of variables; the former requires a transformation  on data which usually leads to a loss of interpretability; the latter aims to select only the relevant features and is well suited when one wants to have a more readable and interpretable subset of features, yet it can be costly from the computational point of view. For this work, PCA \cite{b10} and ISOMAP \cite{b11} are used as feature extraction methods while Spearman Coefficient \cite{b12}, ECDF and Permutation Feature Importance  \cite{b13} have been selected as feature selection tools. It's worth to note that any CNN can be considered as a natural feature extractor.
+
+\subsection{Modeling}
+Random forest and KNN models are used as ML approaches for the process pipeline represented in \figurename{\ref{fig:ml_approach}} while a pretrained CNN has been adopted as DL approach and its process pipeline is showed in \figurename{\ref{fig:dl_approach}}. As one can see there is a common part for each pipeline related to the pre-processing of the raw audio signal. Both approaches come with some advantages. For example, ML approaches make easier to understand the most important features as they require a feature selection and extraction phase. On the other hand, DL models can actually perform better in specific domains like image\cite{b14} and text classification \cite{b15}.
+\section{EXPERIMENTAL SET-UP\label{experiment}}
+\subsection{datasets}
+To assess the approaches, two  classification datasets have been used.
+The DeepFake \cite{b16} dataset is a collection of 8 audio clips from real human speech and  56 ones coming from a generative model which generated some speech from the "real" audio clips. From this dataset a new data sample has been created with each observation lasting  1 second. The  GTZAN \cite{b17} dataset comprises 10 genres with 100 audio files each, all having a length of 30 seconds. In this case 25 out of 100 of samples per genre are assigned to the validation dataset before being split into new audio files lasting 5 seconds.  All data has a sample rate of 22050Hz. 
+\subsection{feature evaluation\label{feature_eval}}
+Clustering output is used to evaluate each feature selection/extraction strategy taking into account the true majority label for each cluster. Specifically, a good strategy should lead to a better separation among real classes. Clearly the outcome depends actually from the clustering itself too, but this work wants to point out the importance of selecting the right feature selection/extraction strategy. Also, clustering quality change with respect to a specific strategy has been assessed using silhouette score as a quality metric.\cite{b18} In this work K-means is used and the number of clusters will be always equal to the expected ones. 
+\subsection{ECDF}
+ECDF curves are used as first way to compare different feature distributions. For both datasets the first 30 features have been selected as input for clustering. The following tables shows the results according to the majority real label and silhouette score for each dataset. Silhouette score is calculated up to $n+1$ clusters where $n$ is the number of expected clusters. K-means algorithms assumes convex and homogeneous clusters and as such we expect to have a similar deviation from the Silhouette score of the single cluster to the average silhouette score among all clusters. 
+\begin{table*}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+         cluster & num. obs & \% real \\
+         \hline
+         0 & 4572  & .388  \\
+         1 & 2928 & .673 \\
+         \hline
+    \end{tabular}
+    \caption{K-means outcome using ECDF features - DeepFake Dataset }
+    \label{tab:k_ecdf_fake}
+\end{table*}
+
+\begin{table*}
+    \centering
+\begin{tabular}{|c|c|c|}
+        n. clusters &  2 & 3  \\
+        \hline
+         std Silhouette  & .041  &.085\\
+         \hline
+    \end{tabular}
+    \caption{clustering score using ECDF - DeepFake Dataset}
+    \label{tab:sil_ecdf_fake}
+\end{table*}
+
+\begin{table*}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+         cluster & num. obs &\% majority  & maj.label  \\
+         \hline
+         0 & 476 & .81  & classical  \\
+         1 & 559 & .30  & blues \\
+         2 & 653 & .30  & pop \\
+         3 & 628 & .29  & disco \\
+         4 & 785 & .175  & reggae \\
+         5 & 618 & .483  & pop \\
+         6 & 440 & .32  & blues \\
+         7 & 928 & .46  & metal \\
+         8 & 432 & .5  & reggae \\
+         9 & 465 & .42  & jazz \\
+         \hline
+    \end{tabular}
+    \caption{K-means outcome using ECDF features - Genre Dataset }
+    \label{tab:k_ecdf_genre}
+\end{table*}
+
+\begin{table*}
+    \centering
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c}
+        n. clusters &  2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 &11\\
+        \hline
+         std Silhouette  & .0219  &.0372 & .0804& .0882&.0707 & .0813 & .0510& .0517 & .0509 & 0479 \\
+         \hline
+    \end{tabular}
+    \caption{clustering score using ECDF - Genre Dataset }
+    \label{tab:sil_ecdf_genre}
+\end{table*}
+\begin{figure*}
+\centering
+\includegraphics[scale=0.2]{ecdf_fake.png}
+\caption{ECDF of a discriminative feature for the FakeSpeech Dataset}
+\label{fig:ecdf_fake}
+\end{figure*}
+\begin{figure*}
+\centering
+\includegraphics[scale=0.2]{ecdf_genre.png}
+\caption{ECDF of a discriminative feature for the Genre Dataset}
+\label{fig:ecdf_genre}
+\end{figure*}
+From table \ref{tab:k_ecdf_fake} it can be observed a good separation between classes using ECDF features as input for the clustering. On the other hand, multi-class classification is far more complex as we can see from table \ref{tab:k_ecdf_genre}. In this last case, three classes are missing such as hiphop, country, rock. However classical, metal, reggae and pop clusters have been recognized successfully (almost 50\% of correct labels). Finally one can note from table \ref{tab:sil_ecdf_genre} a drop in the silhouette deviation after selecting more than 8 clusters as clusters are separated reasonably better 
+\subsection{Non-linear correlation}
+Spearman correlation has been calculated and first 30 less-correlated features are selected. 
+\begin{table*}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+         cluster & num. obs & \% real \\
+         \hline
+         0 & 4761  & 0.40  \\
+         1 & 2739  & 0.672 \\
+         \hline
+    \end{tabular}
+    \caption{K-means outcome using Spearman features - DeepFake Dataset }
+    \label{tab:k_sp_fake}
+\end{table*}
+
+\begin{table*}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+         cluster & num. obs &\% majority  & maj.label  \\
+         \hline
+         0 & 204 & .78  & classical  \\
+         1 & 622 & .37  & reggae \\
+         2 & 1038 & .37  & metal \\
+         3 & 536 & .40  & pop \\
+         4 & 393 & .36  & reggae \\
+         5 & 641 & .22  & jazz \\
+         6 & 508 & .73  & classical \\
+         7 & 964 & .21  & disco \\
+         8 & 561 & .34  & blues \\
+         9 & 517 & .48  & pop \\
+         \hline
+    \end{tabular}
+    \caption{K-means outcome using Spearman features - Genre Dataset }
+    \label{tab:k_sp_genre}
+\end{table*}
+
+\begin{table*}
+    \centering
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c}
+        n. clusters &  2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10  & 11\\
+        \hline
+         std Silhouette  & .0505  &.0228 & .0612& .056&.0523 &.057 & .052& .0542 & .0548 & 0936\\
+         \hline
+    \end{tabular}
+    \caption{clustering score using Spearman Score - Genre Dataset }
+    \label{tab:sil_sp_genre}
+\end{table*}
+
+From the table \ref{tab:k_sp_fake} one can observe outcomes similar to those of the ECDF method. On Genre Dataset three classes are missing such as country, hiphop and rock (same classes as ECDF method). However cluster outcomes seem to be slightly better than ECDF method. 
+\subsection{Feature reduction - PCA}
+Unlike previous methods, PCA is actually a compression method which applies a transformation (rotation) on the features. Concerning DeepFake Dataset, 5 components were enough to have a good data approximation, while for Genre Dataset 15 components have been selected. 
+
+\begin{table*}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+         cluster & num. obs & \% real \\
+         \hline
+         0 & 4616 & .39  \\
+         1 & 2884 &  .672 \\
+         \hline
+    \end{tabular}
+    \caption{K-means outcome using PCA features - DeepFake Dataset }
+    \label{tab:k_pca_fake}
+\end{table*}
+
+\begin{table*}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+         cluster & num. obs &\% majority  & maj.label  \\
+         \hline
+         0 & 416  & .8  & classical  \\
+         1 & 694 & .233  & reggae \\
+         2 & 568 & .341  & reggae \\
+         3 & 856 &.478  & metal \\
+         4 & 692 & .252  & disco \\
+         5 & 401 & .531  & classical \\
+         6 & 554 & .252  & country \\
+         7 & 248 & .443 & hiphop \\
+         8 & 878 & .203  & blues \\
+         9 & 677 & .51  & pop \\
+         \hline
+    \end{tabular}
+    \caption{K-means outcome using PCA features - Genre Dataset }
+    \label{tab:k_pca_genre}
+\end{table*}
+
+\begin{table*}
+    \centering
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c}
+        n. clusters &  2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10  & 11\\
+        \hline
+         std Silhouette  & .0132  &.0624 & .0811&.0883&.082 &.0827 & .0695& .0494 & .0548 & .049\\
+         \hline
+    \end{tabular}
+    \caption{clustering score using PCA - Genre Dataset }
+    \label{tab:sil_pca_genre}
+\end{table*}
+
+From the table \ref{tab:k_pca_fake} one can observe outcomes similar to those of the ECDF method. On Genre Dataset (table \ref{tab:k_pca_genre}) two classes are missing such as rock and jazz and as such outcomes are slightly better than before. 
+\subsection{Feature reduction - ISOMAP}
+Unlike PCA, ISOMAP applies a non-linear transformation. For both datasets,  30 components have been selected. 
+
+\begin{table*}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+         cluster & num. obs & \% real \\
+         \hline
+         0 & 4664 & .38  \\
+         1 & 2836 &  .7 \\
+         \hline
+    \end{tabular}
+    \caption{K-means outcome using ISOMAP features - DeepFake Dataset }
+    \label{tab:k_iso_fake}
+\end{table*}
+
+\begin{table*}
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+         cluster & num. obs &\% majority  & maj.label  \\
+         \hline
+         0 & 664  & .84  & classical  \\
+         1 & 863 & .23  & blues \\
+         2 & 726 & .26  & disco \\
+         3 & 482 &.44  & reggae \\
+         4 & 538 & .69  & pop \\
+         5 & 776 & .25  & reggae \\
+         6 & 426 & .40  & jazz \\
+         7 & 556 & .354 & hiphop \\
+         8 & 816 & .52  & metal \\
+         9 & 137 & .83 & hiphop \\
+         \hline
+    \end{tabular}
+    \caption{K-means outcome using ISOMAP features - Genre Dataset }
+    \label{tab:k_iso_genre}
+\end{table*}
+
+\begin{table*}
+    \centering
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c}
+        n. clusters &  2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10  & 11\\
+        \hline
+         std Silhouette  & .00034  &.05554 & .06033&.05848&.06512 &.06187 & .06745& .07046 & .06824 & .06496\\
+         \hline
+    \end{tabular}
+    \caption{clustering score using ISOMAP - Genre Dataset }
+    \label{tab:sil_iso_genre}
+\end{table*}
+
+From the table \ref{tab:k_iso_genre} one can observe, regarding Genre Dataset, better results: just 2 classes are missing such as rock and country. Another observation is having a really constant value as silhouette score over the different numbers of classes, this is due to the nonlinearity transformation which in turn makes the K-means not a good fit for this kind of data. 
+\subsection{Clustering Exploration}
+\begin{figure*}
+\centering
+\includegraphics[scale=0.3]{heatmap_iso_genre.png}
+\caption{Heatmap for the genre clusters}
+\label{fig:clu_heat_genre}
+\end{figure*}
+After selecting a feature selection/extraction method, one can try to describe clustering output in order to get some insights from the data itself. In case of binary classification, looking at the major difference on a specific feature and then feed this information to a heatmap can be a way to do that. In case of more than two clusters, one can try to analyze the variability with respect to a specific subset of features. For example, figure \ref{fig:clu_heat_genre} shows the heatmap for the first 20 features associated with a big variability over all clusters. One can observe many low values associated with the blues class and very high values for the rock one.
+
+\subsection{Modeling}
+For both datasets I applied the same approach for this phase. Regarding KNN model only the first 20 features are selected from the computed heatmap. In fact, this model is affected by the curse of dimensionality problem above 10-20 dimensions \cite{b19}. On random forest side, I first found the best fit using all of the original features whose number is not so high for this kind of model\cite{b20}, then I selected the best subset of features using  the permutation importance method and considering only the first 30 features. Methods like permutation importance can be used wen a data sample is small (so overfitting probability is higher) or one wants to find a smaller subset of features which explains with a reasonable approximation the target variable.  Both RF (considering all of the features) and approximate RF (i.e. selecting a subset of features) models are reported. Finally regarding the DL approach, I finetuned a pretrained CNN model that is \textbf {resnet34}\cite{b21}. For the genre dataset, I added a further penalty to the loss function using the weight decay approach in order to reduce the overfitting phenomenon for this more complex dataset \cite{b23}. Also data augmentation approach has been used during the training steps as follows:
+\begin{itemize}
+    \item calculate the probability to apply a data augmentation for the current training epoch using the following function: \begin{equation}
+    \begin{aligned}
+    Pr(use\_dg) = \\
+        min([(1+4*\sqrt{\sqrt{(tot\_ep)}*ep)}/tot\_ep,0.99])
+    \end{aligned}
+    \end{equation} 
+    \item apply the data augmentation with a probability equal to  $Pr(use\_dg)$
+\end{itemize}
+
+F1-score is used as main evaluation metric; for the multi-class dataset, the F1 metric is calculated for each label (with respect to the others) in order to assess hard ans easy classes from the classification point of view. 
+\section{ Results}
+
+\begin{table}
+    \centering
+    \begin{tabular}{c|cccc}
+        Model &  KNN& Approx. RF& RF &  CNN\\
+        F1-Score & .815 & .912  &  .936 & .975\\
+        \hline
+    \end{tabular}
+    \caption{Caption}
+    \label{tab:res_fake}
+\end{table}
+\begin{table}
+    \centering
+    \begin{tabular}{c|cccc}
+        Genre &  KNN&  Approx. RF& RF  & CNN \\
+        blues & .236 & .319  &  .366 &  0.564\\
+        classical & .949 & .887  &  .927 &  .934\\
+        country & .37 & .212  &  .314 &  .8\\
+        disco & .4 & .386  & .431 &  .821\\
+        hiphop & .146 & .188  &  .171 &  .79\\
+        jazz &  .465 & .316  &  .392 &  .752\\
+        metal & .5 & .5  &  .522 &  .805\\
+        pop & .78 & .776  & .829 &  .756\\
+        reggae & .181 & .201  & .185 &  .562\\
+        rock & .203 & .253  &  .192 &  .532\\
+        \hline
+        summary & .422 & .404  &  .433 &  0.73\\
+        \hline
+    \end{tabular}
+    \caption{Caption}
+    \label{tab:res_genre}
+\end{table}
+From the table \ref{tab:res_fake} all models performed good on DeepFake dataset. Concerning the Genre Dataset, both KNN and RF models recognized very well classical, pop, metal classes; while hiphop,reggae and rock can be considered hard classes. CNN model outperformed the other models(average score
+of 73\%) proving the effectiveness and predictive power of a transfer learning approach.
+\section {Conclusions and Future Work}
+In this study traditional ML models and DL approaches have been used for both binary and multi-class classification tasks. In addition, EDA tools and unsupervised techniques have been used to gather insights from data as is the case in any business environment where it's important to explain and understand both models and features. CNN proved to be effective for all tasks, however further strategies could be used to improve both CNN and ML models. For example one can first try to explore in more details the hard classes that is classes for which a model performed bad. One way to do that is via the EDA approaches showed in this paper. Also data augmentation can be used or improved (as is the case for the CNN used for this study) on top of any ML or DL approach \cite{b22}
+\begin{thebibliography}{00}
+\bibitem{b1} G. Eason, B. Noble, and I. N. Sneddon, Deep learning Binary/Multi classification for music's brainwave entrainment beats, Nov 2023
+\bibitem{b2} Dr. S. Vena, M. Nerisai, J. Remya, Sound Classification system using machine learning techniques, May 2020
+\bibitem{b3} P. Ghosh, S. Mahapatra, S. Jana, A Study on Music Genre Classification using Machine Learning, Apr 2023.
+\bibitem{b4} J. Gua, F.Xiao, Y.Liu,Anomalous sound dtection using audio representation with machine ID based contrastive learning pretraining, Apr 2023
+\bibitem{b5} H. Rajula, G. Verlato, M. Manchia, N. Antonucci,Comparison of Conventional Statistical Methods with Machine Learning in Medicine: Diagnonis, Drug Development, and Treatment, Sep 2020
+\bibitem{b6} Y. Bouchlaghem, Y. Akhiat, S. Amjad, Feature Selection: a Review and Comparative Study, \url{"https://www.e3sconferences.org/articles/e3sconf/abs/2022/18/e3sconf_icies2022_01046/e3sconf_icies2022_01046.html"},2022
+\bibitem{b7} A.Maccagno, A.Mstropietro, U.Mazziotta A CNN Approach for Audio Classification in Construction Sites,2021
+\bibitem{b8} Mary L. McHugh, The Chi-square test of independence, 2013 
+\bibitem{b9} M.Verleysen, D. François, The Curse of Dimensionality in Data Mining and Time Series Prediction,IWANN 2005: Computational Intelligence and Bioinspired Systems pp 758–770, 2005
+\bibitem{b10} M. E. Tipping, C.M. Bishop, Probabilistic principal component analysis, 1999 
+\bibitem{b11} J.B. Tenenbaum, V. De Silva, J.C. Langford, A global geometric framework for nonlinear dimensionality reduction, 2000
+\bibitem{b12}  M. Hollander, D.A. Wolfe, Nonparameteric statistical methods, 2013
+\bibitem{b13}  L. Breiman, Random Forest, 2001 
+\bibitem{b14} M. Hasan, S. Ullah, M.J. Khan, Comparative analysis of SVM, ANN AND CNN for Classifying vegetation species using hyperpspectral thermal infrared data, Jun 2019 
+\bibitem{b15} R.Keeling, N.Huberf-Fliflet, J.Zhang,F.Wei,H.Zhao,S.Ye,H.Qin, Empirical Comparison of CNN with Other Learning Algorithms for Text Classification in Legal Document Review, Jun 2019  
+\bibitem{b16} J. J. Bird, A. Lotfi, Real-Time Detection of AI-Generated Speech For DeepFake Voice Conversion, \url{"https://arxiv.org/abs/2308.12734"}, Aug 2023
+\bibitem{b17}  B. L. Sturm, The GTZAN dataset, \url{"https://arxiv.org/abs/1306.1461"}, JJun 2013
+\bibitem{b18} D. Matthew, D. Saputra, L. D. Oswari, Effect of Distance Metrics in Determining K-Value in K-means clustering Using Elbow and Silhouette Method, 2019. 
+\bibitem{b19} M.Radovanovic, A.Nanopoulos, M.Ivanovic, Nearest Neighbors in High-Dimensional Data: The Emergence and INfluence of Hubs, 2009  
+\bibitem{b20} T. Wang, H. Zhang, L. Tian, The Application of high-dimensional Data Classification by Random Forest based on Hadoop Cloud Computing Platform, 2016 
+\bibitem{b21} K. He, X. Zhang, S Sen,J. Sun, Deep REsidual Learning for Image Recognition, 2015
+\bibitem{b22} L.Nanni G. Maguolo, M. Paci, Data augmentation approaches for improving animal audio classification,  2019
+\bibitem{b23} M. Andriushchenko, F. D'angelo, A. Varre, N. Flammarion, Why Do we need Weight Decay in Modern Deep Learning?, Oct 2023
+\end{thebibliography}
+\vspace{12pt}
+\end{document}
